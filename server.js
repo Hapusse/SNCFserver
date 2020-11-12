@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');
 // Intantiate server
 
 var server = express();
+var hello = 3;
 
 //Body parser configuration
 

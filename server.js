@@ -2,13 +2,12 @@
 
 var express = require('express');
 var bodyParser = require('body-parser');
-//var apiRouter = require('./apiRouter').router;
+var apiRouter = require('./apiRouter').router;
 //var automatedFunctions = require('./automatedFunctions.js');
 
 // Intantiate server
 
 var server = express();
-var hello = 3;
 
 //Body parser configuration
 
@@ -31,7 +30,7 @@ server.get("/", function (req,res) {
     res.status(200).send("<h1> Bienvenue dans la matrice ! </h1>");
 });
 
-//server.use('/api/',apiRouter);
+server.use('/api/',apiRouter);
 
 // Automated functions (runs every minute for now)
 

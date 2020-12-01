@@ -200,7 +200,7 @@ module.exports = {
                return res.status(404).json({erreur:"Réservation non trouvée sur cet utilisateur"});
            }    else    {
                 // Le trajet est bien réservé par cet utilisateur.
-                connection.query(`SELECT repartitions.id as idRepartition, places.cote_couloir as cotecouloir
+                connection.query(`SELECT repartitions.id as idREPARTITION, places.cote_couloir as cotecouloir
                 FROM billets
                 JOIN places ON places.id = billets.idPLACE
                 JOIN voitures ON voitures.id = places.idVOITURE
@@ -236,17 +236,16 @@ module.exports = {
        var classeVoiture = req.body.classe;
        var isCouloir = req.body.isCouloir;
        var couloirfenetre = (isCouloir == 1) ? 'couloir':'fenetre';
-       var idBillet = req.body.idBillet;
        if (idTrajet == undefined || classe == undefined || isCouloir == undefined){
            return res.status(400).json({'error':'Un argument est manquant (idTrajet ou classe ou isCouloir).'})
        }
        var connection = mysql.createConnection(config.development);
        connection.connect();
-       connection.query(`SELECT Voitures.id as idVoiture
-       FROM Trajets 
-            JOIN Repartitions ON Repartitions.idTrajet = Trajets.id
-            JOIN Voitures ON Voitures.id = Repartitions.idVoiture
-        WHERE Trajets.id = ${idTrajet} AND Voitures.classe = ${classeVoiture} AND Repartitions.nb_places_${couloirfenetre} > 0
+       connection.query(`SELECT voitures.id as idVoiture
+       FROM trajets 
+            JOIN repartitions ON repartitions.idTRAJET = trajets.id
+            JOIN voitures ON voitures.id = repartitions.idVOITURE
+        WHERE trajets.id = ${idTrajet} AND voitures.classe = ${classeVoiture} AND repartitions.nb_places_${couloirfenetre} > 0
         LIMIT 1`,function(err, rows){
             if (err){
                 console.log(err);
@@ -260,24 +259,24 @@ module.exports = {
             }
             var idVoiture = rows[0].idVoiture;
             var coefficient_multiplicatif_classe = (classeVoiture == '1') ? 1.1:1
-            queryPlacesReserveesVoiture = `SELECT Billets.idPlace
-            FROM Billets
-            JOIN Places ON Places.id = Billets.idPlace
-            JOIN Voitures ON Voitures.id = Places.idVoiture
-            WHERE Voitures.id = ${idVoiture} AND Places.cote_couloir = ${isCouloir}`;
-            queryIdPlaceDisponible = `(SELECT Places.id
-            FROM Places
-            JOIN Voitures ON Voitures.id = Places.idVoiture
-            WHERE Voitures.id = ${idVoiture} AND Places.id NOT IN (${queryPlacesReserveesVoiture})
+            queryPlacesReserveesVoiture = `SELECT billets.idPLACE
+            FROM billets
+            JOIN places ON places.id = billets.idPLACE
+            JOIN voitures ON voitures.id = places.idVOITURE
+            WHERE voitures.id = ${idVoiture} AND places.cote_couloir = ${isCouloir}`;
+            queryIdPlaceDisponible = `(SELECT places.id
+            FROM places
+            JOIN voitures ON voitures.id = places.idVOITURE
+            WHERE voitures.id = ${idVoiture} AND places.id NOT IN (${queryPlacesReserveesVoiture})
             LIMIT 1)`; // On a l'id de la place disponible, manque le prix du billet
-            queryPrixBillet = `(SELECT Trajets.prix_initial*(100-Reduction.pourcentage)*${coefficient_multiplicatif_classe}
-            FROM Trajets
-            JOIN Clients
-            JOIN Reductions ON Reductions.id = Clients.idREDUCTION
-            WHERE Trajets.id = ${idTrajet} AND Clients.id = ${userId}
+            queryPrixBillet = `(SELECT trajets.prix_initial*(100-Reduction.pourcentage)*${coefficient_multiplicatif_classe}
+            FROM trajets
+            JOIN clients
+            JOIN reductions ON reductions.id = clients.idREDUCTION
+            WHERE trajets.id = ${idTrajet} AND clients.id = ${userId}
             LIMIT 1;)` // Renvoie un résultat unique
 
-            connection.query(`INSERT INTO Billets (id, idTrajet, idPlace, idCLIENT, prixBillet)
+            connection.query(`INSERT INTO billets (id, idTRAJET, idPLACE, idCLIENT, prix_billet)
                                         VALUES (NULL, ${idTrajet},${queryIdPlaceDisponible},${userId},${queryPrixBillet});`,function(err){
                                             if (err){
                                                 console.log(err);
@@ -285,7 +284,7 @@ module.exports = {
                                                 return res.status(500).json({erreur:"Erreur serveur"});
                                             }
                                         });
-            connection.query(`UPDATE Repartitions SET nb_places_${couloirfenetre} = nb_places_${couloirfenetre} - 1
+            connection.query(`UPDATE repartitions SET nb_places_${couloirfenetre} = nb_places_${couloirfenetre} - 1
             WHERE idTRAJET = ${idTrajet} AND idVOITURE = ${idVoiture}`)
             connection.end();
             return res.status(201).json({status:"ok"});
@@ -304,12 +303,9 @@ module.exports = {
             var prenom = req.body.prenom;
             var date_naissance = req.body.date_naissance;
             var idREDUCTION = req.body.idREDUCTION || 1;
-            if (idBillet == undefined){
-                return res.status(400).json({'error':'idBillet non renseigné'})
-            }
             var connection = mysql.createConnection(config.development);
             connection.connect();
-            connection.query(`SELECT prenom,nom,date_naissance,isAdmin FROM Clients WHERE id ='${userId}'`, function(rows,err,fields){
+            connection.query(`SELECT prenom,nom,date_naissance,isAdmin FROM clients WHERE id ='${userId}'`, function(rows,err,fields){
                 if (err){
                     console.log(err);
                     connection.end();
@@ -324,8 +320,7 @@ module.exports = {
                      var newPrenom = (rows[0].prenom == "undefined") ? prenom : rows[0].prenom;
                      var newDateNaissance = (rows[0].date_naissance == '0000-00-00') ? date_naissance : rows[0].date_naissance;
                      var newIdReduction = idREDUCTION;
-                     connection.query(`UPDATE Clients SET nom = '${newNom}', prenom = '${newPrenom}, date_naissance = '${newDateNaissance}', idREDUCTION = ${newIdReduction}  WHERE id = ${userId}`)
-                    
+                     connection.query(`UPDATE clients SET nom = '${newNom}', prenom = '${newPrenom}', date_naissance = '${newDateNaissance}', idREDUCTION = ${newIdReduction} WHERE id = ${userId}`)
                 }
             })
 

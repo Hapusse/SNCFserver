@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `billets` (
   `idTRAJET` int NOT NULL,
   `idPLACE` int NOT NULL,
   `idCLIENT` int NOT NULL,
-  `prix_billet_initial` int NOT NULL,
+  `prix_billet` int NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idTRAJET` (`idTRAJET`),
   KEY `idPLACE` (`idPLACE`),

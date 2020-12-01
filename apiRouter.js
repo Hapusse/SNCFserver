@@ -11,8 +11,8 @@ exports.router = (function() {
     
     //Users routes
     apiRouter.route('/users/register/').post(clientsCtrl.register);
-    apiRouter.route('/users/login/').get(clientsCtrl.login);
-    apiRouter.route('/users/me/').get(clientsCtrl.getUserProfile);
+    apiRouter.route('/users/login/').post(clientsCtrl.login);
+    apiRouter.route('/users/me/').post(clientsCtrl.getUserProfile);
     apiRouter.route('/users/me/changePassword/').put(clientsCtrl.changePassword);
     apiRouter.route('/users/me/cancelReservation/').put(clientsCtrl.cancelReservation);
     apiRouter.route('/users/me/newReservation/').put(clientsCtrl.newReservation);

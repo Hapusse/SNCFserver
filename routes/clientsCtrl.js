@@ -32,7 +32,7 @@ module.exports = {
         }
         var connection = mysql.createConnection(config.development);
         connection.connect();
-        connection.query(`SELECT email FROM Clients WHERE email ='${email}'`, function(err, rows, fields) {
+        connection.query(`SELECT email FROM clients WHERE email ='${email}'`, function(err, rows, fields) {
             if (err){
                 console.log(err);
                 connection.end();
@@ -63,7 +63,7 @@ module.exports = {
         }
         var connection = mysql.createConnection(config.development);
         connection.connect();
-        connection.query(`SELECT id,email,password,isAdmin FROM Clients WHERE email ='${email}'`, function(err, rows, fields) {
+        connection.query(`SELECT id,email,password,isAdmin FROM clients WHERE email ='${email}'`, function(err, rows, fields) {
             if (rows[0] != undefined){
                 bcrypt.compare(password, rows[0].password, function(errBycrypt,resBycrypt){
                     if(resBycrypt){
@@ -91,7 +91,7 @@ module.exports = {
         }
         var connection = mysql.createConnection(config.development);
         connection.connect();
-        connection.query(`SELECT id,email,prenom,nom,date_naissance,isAdmin FROM Clients WHERE id ='${userId}'`, function(err, rows, fields) {
+        connection.query(`SELECT id,email,prenom,nom,date_naissance,isAdmin FROM clients WHERE id ='${userId}'`, function(err, rows, fields) {
             if (rows[0] != undefined){
                 connection.end();
                 return res.status(201).json(rows[0]);
@@ -127,7 +127,7 @@ module.exports = {
                 return res.status(404).json({'error':'utilisateur non trouvé'});
             } else {
                 bcrypt.hash(newPassword,5,function(err,bCryptedNewPassword){
-                    connection.query(`UPDATE Clients SET password = '${bCryptedNewPassword}' WHERE id = ${userId}`);
+                    connection.query(`UPDATE clients SET password = '${bCryptedNewPassword}' WHERE id = ${userId}`);
                     connection.end();
                     return res.status(201).json({'status':'complete'})
                 })
@@ -143,23 +143,23 @@ module.exports = {
         }
         var connection = mysql.createConnection(config.development);
         connection.connect();
-        connection.query(`SELECT Trajets.heure_depart AS heure_dep, Trajets.heure_arrivee AS heure_arr, 
+        connection.query(`SELECT trajets.heure_depart AS heure_dep, trajets.heure_arrivee AS heure_arr, 
         Garedep.nom AS nomGareDepart, Garedep.ville AS villeGareDep, Garearr.nom AS nomGareArrivee, 
-        Garearr.ville AS villeGareArrivee, Billets.prix_billet AS prixBillet,
-        Places.numero_place AS numeroPlace, Repartitions.positionDansTrain AS numeroVoiture, Trains.numero AS nomTrain,
-        Trains.type AS typeTrain, Voitures.classe_voiture AS classeReservation, Billets.id AS idBillet
-        FROM Billets
-        JOIN Trajets ON Trajets.id = Billets.idTRAJET
-        JOIN Clients ON Clients.id = Billets.idCLIENT
-        JOIN Reductions ON Reductions.id = Clients.idREDUCTION
-        JOIN Places ON Places.id = Billets.idPLACE
-        JOIN Gares AS Garedep ON Garedep.id = Trajets.idGAREDEPART
-        JOIN Gares AS Garearr ON Garearr.id = Trajets.idGAREARRIVEE
-        JOIN Voitures ON Voitures.id = Places.idVOITURE
-        JOIN Trains ON Trains.id = Trajets.idTRAIN
-        JOIN Repartitions ON Repartitions.idVOITURE = Voitures.id AND Repartitions.idTRAJET = Trajets.id
-        WHERE Clients.id = ${idUser}
-        GROUP BY Billets.id
+        Garearr.ville AS villeGareArrivee, billets.prix_billet AS prixBillet,
+        places.numero_place AS numeroPlace, repartitions.positionDansTrain AS numeroVoiture, trains.numero AS nomTrain,
+        trains.type AS typeTrain, voitures.classe AS classeReservation, billets.id AS idBillet
+        FROM billets
+        JOIN trajets ON trajets.id = billets.idTRAJET
+        JOIN clients ON clients.id = billets.idCLIENT
+        JOIN reductions ON reductions.id = clients.idREDUCTION
+        JOIN places ON places.id = billets.idPLACE
+        JOIN gares AS Garedep ON Garedep.id = trajets.idGAREDEPART
+        JOIN gares AS Garearr ON Garearr.id = trajets.idGAREARRIVEE
+        JOIN voitures ON voitures.id = places.idVOITURE
+        JOIN trains ON trains.id = trajets.idTRAIN
+        JOIN repartitions ON repartitions.idVOITURE = voitures.id AND repartitions.idTRAJET = trajets.id
+        WHERE clients.id = ${idUser}
+        GROUP BY billets.id
         ORDER BY heure_dep;`,function(err, rows, fields){
             if (err) {
                 console.log(err);
@@ -189,7 +189,7 @@ module.exports = {
        // Premièrement, vérifier que le trajet est bien réservé par l'utilisateur qui le demande
        // Ensuite, altérer le trajet pour que idClient = 1
        // Etape 1:
-       connection.query(`SELECT Billets.id WHERE Billets.id = ${idBillet} AND Billets.idCLIENT = ${userId}`,function(err,rows,fields){
+       connection.query(`SELECT billets.id WHERE billets.id = ${idBillet} AND billets.idCLIENT = ${userId}`,function(err,rows,fields){
            if (err){
                console.log(err);
                connection.end();
@@ -200,11 +200,11 @@ module.exports = {
                return res.status(404).json({erreur:"Réservation non trouvée sur cet utilisateur"});
            }    else    {
                 // Le trajet est bien réservé par cet utilisateur.
-                connection.query(`SELECT Repartitions.id as idRepartition, Places.cote_couloir as cotecouloir
-                FROM Billets
-                JOIN Places ON Places.id = Billets.idPLACE
-                JOIN Voitures ON Voitures.id = Places.idVOITURE
-                JOIN Repartitions ON Billets.idTRAJET = Repartitions.idTRAJET AND Voitures.id = Repartitions.idVOITURE
+                connection.query(`SELECT repartitions.id as idRepartition, places.cote_couloir as cotecouloir
+                FROM billets
+                JOIN places ON places.id = billets.idPLACE
+                JOIN voitures ON voitures.id = places.idVOITURE
+                JOIN repartitions ON billets.idTRAJET = repartitions.idTRAJET AND voitures.id = repartitions.idVOITURE
                 `, function(err,rows, fields){
                     if (err){
                         console.log(err);
@@ -216,8 +216,8 @@ module.exports = {
                         return res.status(404).json({error : `Ce billet n'est lié à aucun trajet`})
                     } else {
                         var couloirfenetre = (rows[0].cotecouloir == 1) ? "couloir":"fenetre";
-                        connection.query(`DELETE FROM Billets WHERE id = ${idBillet}`);
-                        connection.query(`UPDATE Repartitions SET nb_places_${couloirfenetre} = nb_places_${couloirfenetre} + 1 WHERE id = ${rows[0].idRepartition}`);
+                        connection.query(`DELETE FROM billets WHERE id = ${idBillet}`);
+                        connection.query(`UPDATE repartitions SET nb_places_${couloirfenetre} = nb_places_${couloirfenetre} + 1 WHERE id = ${rows[0].idRepartition}`);
                     }
                     
                 });
@@ -259,6 +259,7 @@ module.exports = {
                 return res.status(404).json({erreur:"Réservation non disponible"});
             }
             var idVoiture = rows[0].idVoiture;
+            var coefficient_multiplicatif_classe = (classeVoiture == '1') ? 1.1:1
             queryPlacesReserveesVoiture = `SELECT Billets.idPlace
             FROM Billets
             JOIN Places ON Places.id = Billets.idPlace
@@ -269,7 +270,7 @@ module.exports = {
             JOIN Voitures ON Voitures.id = Places.idVoiture
             WHERE Voitures.id = ${idVoiture} AND Places.id NOT IN (${queryPlacesReserveesVoiture})
             LIMIT 1)`; // On a l'id de la place disponible, manque le prix du billet
-            queryPrixBillet = `(SELECT Trajets.prix_initial*(100-Reduction.pourcentage)
+            queryPrixBillet = `(SELECT Trajets.prix_initial*(100-Reduction.pourcentage)*${coefficient_multiplicatif_classe}
             FROM Trajets
             JOIN Clients
             JOIN Reductions ON Reductions.id = Clients.idREDUCTION

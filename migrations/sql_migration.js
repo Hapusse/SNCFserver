@@ -1,5 +1,6 @@
 var mysql      = require('mysql');
 var fs = require('fs');
+
 var connection = mysql.createConnection({
   host     : 'localhost',
   user     : 'root',
@@ -7,6 +8,7 @@ var connection = mysql.createConnection({
   database : "database_development_sncf",
   multipleStatements : true
 });
+
 
 connection.connect();
 

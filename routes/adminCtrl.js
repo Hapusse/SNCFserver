@@ -37,7 +37,7 @@ module.exports = {
             var connection = mysql.createConnection(config.development);
             connection.connect();
             // On pourrait rajouter le fait qu'une gare soit censée être unique (et donc remonter une erreur si on essaye de créer une gare dont le nom existe déjà...)
-            connection.query(`INSERT INTO Gares (id, nom, ville) VALUES (NULL, "${nom}", "${ville}");`, function(err, rows, fields) {
+            connection.query(`INSERT INTO gares (id, nom, ville) VALUES (NULL, "${nom}", "${ville}");`, function(err, rows, fields) {
                 if (err){
                     console.log(err);
                     connection.end();
@@ -136,7 +136,7 @@ module.exports = {
                 }   else {
                 var idVoiture = rows[0].insertId;
                 console.log(idVoiture);
-                var creationPlaceQuery = `INSERT INTO Place (id,idVoiture,numero_place,cote_couloir) VALUES `;
+                var creationPlaceQuery = `INSERT INTO places (id,idVOITURE,numero_place,cote_couloir) VALUES `;
                 for (let i=1 ; i <= nbPlaces; i++){
                     var cote_couloir = (i%4 <= 1 );
                     if (i == 1){
@@ -200,7 +200,7 @@ module.exports = {
             configuration.multipleStatements = true;
             var connection = mysql.createConnection(configuration);
             // Créer un trajet
-            connection.query(`INSERT INTO Trajets (id, idGAREDEPART, idGAREARRIVEE, idTRAIN, heure_depart, heure_arrivee) VALUES (NULL,${idGAREDEPART},${idGAREARRIVEE},${idTrain}, ${heureDepart},${heureArrivee});
+            connection.query(`INSERT INTO trajets (id, idGAREDEPART, idGAREARRIVEE, idTRAIN, heure_depart, heure_arrivee) VALUES (NULL,${idGAREDEPART},${idGAREARRIVEE},${idTrain}, ${heureDepart},${heureArrivee});
             SELECT LAST_INSERT_ID();`, function(err,rows,fields){
                 if (err){
                     console.log(err);
@@ -209,10 +209,11 @@ module.exports = {
                 } else {
                     var idTRAJET = rows[0].insertId;
                     // Trajet créé. On doit maintenant créer la répartition à partir des données de listeVoitures
-                    var creationRepartitionQuery = `INSERT INTO Repartitions (id, idTRAJET,idVOITURE,positionDansTrain,nb_places_couloir,nb_places_fenetre) VALUES `;
+                    var creationRepartitionQuery = `INSERT INTO repartitions (id, idTRAJET,idVOITURE,positionDansTrain,nb_places_couloir,nb_places_fenetre) VALUES `;
                     for (const position in listeVoitures){
-                        selectionNbPlacesVoitureCouloirQuery = `(SELECT COUNT(id) FROM Places WHERE idVoiture = ${listeVoitures.position} AND cote_couloir = 1)`;
-                        selectionNbPlacesVoitureFenetreQuery = `(SELECT COUNT(id) FROM Places WHERE idVoiture = ${listeVoitures.position} AND cote_couloir = 0)`;                    creationRepartitionQuery += `(NULL, ${idTRAJET},${listeVoitures.position}, ${position}, ${selectionNbPlacesVoitureCouloirQuery},${selectionNbPlacesVoitureFenetreQuery}),`;
+                        selectionNbPlacesVoitureCouloirQuery = `(SELECT COUNT(id) FROM places WHERE idVoiture = ${listeVoitures.position} AND cote_couloir = 1)`;
+                        selectionNbPlacesVoitureFenetreQuery = `(SELECT COUNT(id) FROM places WHERE idVoiture = ${listeVoitures.position} AND cote_couloir = 0)`;
+                        creationRepartitionQuery += `(NULL, ${idTRAJET},${listeVoitures.position}, ${position}, ${selectionNbPlacesVoitureCouloirQuery},${selectionNbPlacesVoitureFenetreQuery}),`;
                     }
                     creationRepartitionQuery = creationRepartitionQuery.slice(0,-1);
                     console.log(creationRepartitionQuery);

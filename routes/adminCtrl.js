@@ -117,6 +117,8 @@ module.exports = {
             // Il faut créer une voiture et N places, moitié couloir (1-2  3-4)(5-6  7-8) --> Couloirs = 2 ou 3 modulo 4
             //Params d'entrée :
             var nbPlaces = req.body.nbPlaces;
+            var nbPlacesCouloir = Math.trunc((nbPlaces+1)/2);
+            var nbPlacesFenetre = Math.trunc(nbPlaces/2);
             var classeVoiture = req.body.classeVoiture;
             if (nbPlaces == null || classeVoiture == null || nbPlaces != parseInt(nbPlaces,10)){
                 return res.status(400).json({'error' : 'Paramètre nbPlaces ou classeVoiture manquant'});    
@@ -127,7 +129,7 @@ module.exports = {
             var connection = mysql.createConnection(configuration);
             connection.connect();
             connection.query(`
-            INSERT INTO voitures (id, nb_places, classe_voiture) VALUES (NULL, ${nbPlaces},"${classeVoiture}");
+            INSERT INTO voitures (id, nb_places_couloir,nb_places_fenetre, classe_voiture) VALUES (NULL, ${nbPlacesCouloir},${nbPlacesFenetre},"${classeVoiture}");
             SELECT LAST_INSERT_ID() AS idVoiture;`, function(err,rows,fields){
                 if (err){
                     console.log(err);
@@ -229,6 +231,16 @@ module.exports = {
                     });
                 }
             });
+        }
+    },
+    searchVoiture : function(req,res){
+        responseToAdmin = adminChecker(req.headers['authorization']);
+        if (responseToAdmin == 400){
+            return res.status(400).json({'error':'token corrompu ou expiré'})
+        }
+        else if (responseToAdmin == 403){
+            return res.status(403).json({'error':'Vous n\'avez pas les privilèges administrateurs. Accès refusé.'})
+        } else {
         }
     }
 }

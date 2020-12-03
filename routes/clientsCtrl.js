@@ -387,7 +387,7 @@ module.exports = {
         JOIN gares AS Garedep ON Garedep.id = trajets.idGAREDEPART
         JOIN gares AS Garearr ON Garearr.id = trajets.idGAREARRIVEE
         JOIN trains ON trains.id = trajets.idTRAIN
-        WHERE idGAREDEPART = ${idGareDepart} AND idGAREARRIVEE = ${idGareArrivee} AND DATE(heureDepart) = ${jourTrajet}
+        WHERE idGAREDEPART = ${idGareDepart} AND idGAREARRIVEE = ${idGareArrivee} AND DATE(heureDepart) = '${jourTrajet}'
         GROUP BY trains.id`
         connection.connect();
         connection.query(querySearchTrajets, function(err,rows,fields){

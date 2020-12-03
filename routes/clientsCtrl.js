@@ -18,7 +18,7 @@ module.exports = {
         var password = req.body.password;
         var prenom = req.body.prenom;
         var nom = req.body.nom;
-        var date_naissance = req.body.date_naissance;
+        var date_naissance = req.body.date_naissance || '0000-00-00';
         var idREDUCTION = req.body.idREDUCTION || 1;
         console.log(idREDUCTION);
         if (email == null || password == null){
@@ -42,6 +42,11 @@ module.exports = {
                 bcrypt.hash(password,5,function(err,bcryptedPassword){
                     connection.query(`INSERT INTO clients (id, idREDUCTION, prenom, nom, date_naissance, email, password, isAdmin) VALUES
                     (NULL, ${idREDUCTION}, '${prenom}' ,'${nom}' , '${date_naissance}', '${email}', '${bcryptedPassword}', 0);`,function(err,rows,fields){
+                        if (err){
+                            console.log(err);
+                            connection.end();
+                            return res.status(500).json({erreur:"Erreur serveur"});
+                        }
                         connection.end();
                         return res.status(201).json({status:'complete'});
                     });
@@ -299,13 +304,11 @@ module.exports = {
             if (userId < 0){
                 return res.status(400).json({'error':'token corrompu ou expiré'})
             }
-            var nom = req.body.nom;
-            var prenom = req.body.prenom;
-            var date_naissance = req.body.date_naissance;
+            var email = req.body.email;
             var idREDUCTION = req.body.idREDUCTION || 1;
             var connection = mysql.createConnection(config.development);
             connection.connect();
-            connection.query(`SELECT prenom,nom,date_naissance,isAdmin FROM clients WHERE id ='${userId}'`, function(rows,err,fields){
+            connection.query(`SELECT id,email FROM clients WHERE id ='${userId}'`, function(err,rows,fields){
                 if (err){
                     console.log(err);
                     connection.end();
@@ -316,23 +319,34 @@ module.exports = {
                     return res.status(404).json({erreur:"Utilisateur non trouvé"});
                 }    else    {
                      // Il faut modifier les infos si elles ne sont pas définies (ou si on veut pour idREDUCTION)
-                     var newNom = (rows[0].nom == "undefined") ? nom : rows[0].nom;
-                     var newPrenom = (rows[0].prenom == "undefined") ? prenom : rows[0].prenom;
-                     var newDateNaissance = (rows[0].date_naissance == '0000-00-00') ? date_naissance : rows[0].date_naissance;
+                     var newEmail = (email == "undefined") ? rows[0].email : email;
                      var newIdReduction = idREDUCTION;
-                     connection.query(`UPDATE clients SET nom = '${newNom}', prenom = '${newPrenom}', date_naissance = '${newDateNaissance}', idREDUCTION = ${newIdReduction} WHERE id = ${userId}`)
+                     connection.query(`UPDATE clients SET email = '${newEmail}', idREDUCTION = ${newIdReduction} WHERE id = ${userId}`)
                 }
-            })
+            });
 
        },
        searchGares: function(req,res){
         var connection = mysql.createConnection(config.development);
         connection.connect();
-        connection.query(`SELECT * FROM gares`, function(rows,err,fields){
+        connection.query(`SELECT id,nom,ville FROM gares`, function(err,rows,fields){
             if (err){
                 console.log(err);
                 connection.end();
-                return res.status(500).json({erreur:"Erreur serveur"});
+                return res.status(500).json(err);
+            }
+            connection.end();
+            return res.status(201).json(rows);
+       });
+    },
+    searchReductions : function(req,res){
+        var connection = mysql.createConnection(config.development);
+        connection.connect();
+        connection.query(`SELECT * FROM reductions`, function(err,rows,fields){
+            if (err){
+                console.log(err);
+                connection.end();
+                return res.status(500).json(err);
             }
             connection.end();
             return res.status(201).json(rows);

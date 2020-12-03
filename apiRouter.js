@@ -23,6 +23,8 @@ exports.router = (function() {
     apiRouter.route('/admin/creation/train/').post(adminCtrl.trainCreator);
     apiRouter.route('/admin/creation/trajet/').post(adminCtrl.trajetCreator);
     apiRouter.route('/search/gares/').get(clientsCtrl.searchGares);
+    apiRouter.route('/search/reductions/').get(clientsCtrl.searchReductions);
+
 
     return apiRouter;
 })();

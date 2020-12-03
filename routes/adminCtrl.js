@@ -4,7 +4,6 @@
 var config = require('../config/config');
 var jwtUtils = require('../utils/jwt.utils');
 var mysql      = require('mysql');
-const { json } = require('body-parser');
 
 
 adminChecker = (headerAuth) => {
@@ -13,7 +12,7 @@ adminChecker = (headerAuth) => {
         return 400;
     }
     var privilege = jwtUtils.getCredentials(headerAuth);
-    if (privilege = 0) {
+    if (privilege == 0) {
         return 403;
     } else { return 201; }
 }

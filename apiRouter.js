@@ -15,11 +15,13 @@ exports.router = (function() {
     apiRouter.route('/users/me/').post(clientsCtrl.getUserProfile);
     apiRouter.route('/users/me/changePassword/').put(clientsCtrl.changePassword);
     apiRouter.route('/users/me/cancelReservation/').put(clientsCtrl.cancelReservation);
-    apiRouter.route('/users/me/newReservation/').put(clientsCtrl.newReservation);
+    apiRouter.route('/users/me/myReservations/').get(clientsCtrl.getMyReservations);
+    apiRouter.route('/users/me/myReservations/newReservation/').post(clientsCtrl.newReservation);
     apiRouter.route('/admin/creation/voiture/').post(adminCtrl.voitureCreator);
     apiRouter.route('/admin/creation/gare/').post(adminCtrl.gareCreator);
     apiRouter.route('/admin/creation/reduction/').post(adminCtrl.reductionCreator);
     apiRouter.route('/admin/creation/train/').post(adminCtrl.trainCreator);
+    apiRouter.route('/admin/creation/trajet/').post(adminCtrl.trajetCreator);
 
     return apiRouter;
 })();

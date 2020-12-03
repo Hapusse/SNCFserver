@@ -145,7 +145,7 @@ module.exports = {
         connection.connect();
         connection.query(`SELECT trajets.heure_depart AS heure_dep, trajets.heure_arrivee AS heure_arr, 
         Garedep.nom AS nomGareDepart, Garedep.ville AS villeGareDep, Garearr.nom AS nomGareArrivee, 
-        Garearr.ville AS villeGareArrivee, billets.prix_billet AS prixBillet,
+        Garearr.ville AS villeGareArrivee, billets.prix_billet/100 AS prixBillet,
         places.numero_place AS numeroPlace, repartitions.positionDansTrain AS numeroVoiture, trains.numero AS nomTrain,
         trains.type AS typeTrain, voitures.classe AS classeReservation, billets.id AS idBillet
         FROM billets
@@ -158,7 +158,7 @@ module.exports = {
         JOIN voitures ON voitures.id = places.idVOITURE
         JOIN trains ON trains.id = trajets.idTRAIN
         JOIN repartitions ON repartitions.idVOITURE = voitures.id AND repartitions.idTRAJET = trajets.id
-        WHERE clients.id = ${idUser}
+        WHERE clients.id = ${userId}
         GROUP BY billets.id
         ORDER BY heure_dep;`,function(err, rows, fields){
             if (err) {
@@ -236,7 +236,7 @@ module.exports = {
        var classeVoiture = req.body.classe;
        var isCouloir = req.body.isCouloir;
        var couloirfenetre = (isCouloir == 1) ? 'couloir':'fenetre';
-       if (idTrajet == undefined || classe == undefined || isCouloir == undefined){
+       if (idTrajet == undefined || classeVoiture == undefined || isCouloir == undefined){
            return res.status(400).json({'error':'Un argument est manquant (idTrajet ou classe ou isCouloir).'})
        }
        var connection = mysql.createConnection(config.development);
@@ -259,9 +259,9 @@ module.exports = {
             }
             var idVoiture = rows[0].idVoiture;
             var coefficient_multiplicatif_classe = (classeVoiture == '1') ? 1.1:1
-            queryPlacesReserveesVoiture = `SELECT billets.idPLACE
-            FROM billets
-            JOIN places ON places.id = billets.idPLACE
+            queryPlacesReserveesVoiture = `SELECT bil.idPLACE
+            FROM (SELECT * FROM billets) AS bil
+            JOIN places ON places.id = bil.idPLACE
             JOIN voitures ON voitures.id = places.idVOITURE
             WHERE voitures.id = ${idVoiture} AND places.cote_couloir = ${isCouloir}`;
             queryIdPlaceDisponible = `(SELECT places.id
@@ -269,12 +269,12 @@ module.exports = {
             JOIN voitures ON voitures.id = places.idVOITURE
             WHERE voitures.id = ${idVoiture} AND places.id NOT IN (${queryPlacesReserveesVoiture})
             LIMIT 1)`; // On a l'id de la place disponible, manque le prix du billet
-            queryPrixBillet = `(SELECT trajets.prix_initial*(100-Reduction.pourcentage)*${coefficient_multiplicatif_classe}
+            queryPrixBillet = `(SELECT trajets.prix_initial*(100-reductions.pourcentage)*${coefficient_multiplicatif_classe}
             FROM trajets
             JOIN clients
             JOIN reductions ON reductions.id = clients.idREDUCTION
             WHERE trajets.id = ${idTrajet} AND clients.id = ${userId}
-            LIMIT 1;)` // Renvoie un résultat unique
+            LIMIT 1)` // Renvoie un résultat unique
 
             connection.query(`INSERT INTO billets (id, idTRAJET, idPLACE, idCLIENT, prix_billet)
                                         VALUES (NULL, ${idTrajet},${queryIdPlaceDisponible},${userId},${queryPrixBillet});`,function(err){
@@ -324,6 +324,19 @@ module.exports = {
                 }
             })
 
-       }
+       },
+       searchGares: function(req,res){
+        var connection = mysql.createConnection(config.development);
+        connection.connect();
+        connection.query(`SELECT * FROM gares`, function(rows,err,fields){
+            if (err){
+                console.log(err);
+                connection.end();
+                return res.status(500).json({erreur:"Erreur serveur"});
+            }
+            connection.end();
+            return res.status(201).json(rows);
+       });
+    }
 
    }

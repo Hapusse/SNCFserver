@@ -12,6 +12,7 @@ adminChecker = (headerAuth) => {
         return 400;
     }
     var privilege = jwtUtils.getCredentials(headerAuth);
+    console.log(`Privilèges : ${privilege}`);
     if (privilege == 0) {
         return 403;
     } else { return 201; }
@@ -286,6 +287,7 @@ module.exports = {
             LIMIT ${nbResultatsLimite}`
             var connection = mysql.createConnection(configuration);
             // Créer un trajet
+            connection.connect();
             connection.query(selectionVoituresPresentesAUneDate,function(err, rows, fields){
             if (err){
                 console.log(err);
@@ -299,6 +301,30 @@ module.exports = {
 
 
         }
+    },
+    searchTrain: function(req,res){
+        responseToAdmin = adminChecker(req.headers['authorization']);
+        if (responseToAdmin == 400){
+            return res.status(400).json({'error':'token corrompu ou expiré'})
+        }
+        else if (responseToAdmin == 403){
+            return res.status(403).json({'error':'Vous n\'avez pas les privilèges administrateurs. Accès refusé.'})
+        } else {
+            var nbResultatsLimite = req.body.nbResultatsLimite || 20;
+            var typeTrainSubquery = (req.body.typeTrain) ? `type = '${req.body.typeTrain}'` : `1`;
+            var connection = mysql.createConnection(config.development);
+            connection.connect();
+            connection.query(`SELECT * FROM trains WHERE ${typeTrainSubquery}
+            LIMIT ${nbResultatsLimite}`,function(err, rows, fields){
+                if (err){
+                    console.log(err);
+                    connection.end();
+                    return res.status(500).json({erreur:"Erreur serveur"});   
+                } else {
+                    connection.end();
+                    return res.status(201).json(rows);
+                }
+            });
+        }
     }
 }
-                

@@ -38,7 +38,7 @@ module.exports = {
         if (token != null){
             try{
                 var jwtToken = jwt.verify(token,JWT_SIGN_SECRET);
-                if (jwtToken != null){ userId = jwtToken.isAdmin; }
+                if (jwtToken != null){ isAdmin = jwtToken.isAdmin; }
             }
             catch(err){}
             }

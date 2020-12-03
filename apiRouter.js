@@ -1,7 +1,7 @@
 // Imports
 
 var express = require('express');
-const adminCtrl = require('./routes/adminCtrl');
+var adminCtrl = require('./routes/adminCtrl');
 var clientsCtrl = require('./routes/clientsCtrl');
 
 //Router
@@ -22,7 +22,7 @@ exports.router = (function() {
     apiRouter.route('/admin/creation/reduction/').post(adminCtrl.reductionCreator);
     apiRouter.route('/admin/creation/train/').post(adminCtrl.trainCreator);
     apiRouter.route('/admin/creation/trajet/').post(adminCtrl.trajetCreator);
-    apiRouter.route('/search/gares/').get(adminCtrl.trajetCreator);
+    apiRouter.route('/search/gares/').get(clientsCtrl.searchGares);
 
     return apiRouter;
 })();

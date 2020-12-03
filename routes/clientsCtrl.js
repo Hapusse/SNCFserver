@@ -351,6 +351,47 @@ module.exports = {
             connection.end();
             return res.status(201).json(rows);
        });
+    },
+    searchReductions : function(req,res){
+        var connection = mysql.createConnection(config.development);
+        connection.connect();
+        connection.query(`SELECT * FROM reductions`, function(err,rows,fields){
+            if (err){
+                console.log(err);
+                connection.end();
+                return res.status(500).json(err);
+            }
+            connection.end();
+            return res.status(201).json(rows);
+       });
+    },
+    searchTrajets: function(req,res){
+        var connection = mysql.createConnection(config.development);
+        queryCouloirFenetre12 = function(isCouloir, classe){
+            var couloirFenetre = (isCouloir) ? "couloir" : "fenetre";
+            return `(SELECT SUM(repartitions.nb_places_${couloirFenetre}) FROM repartitions
+            JOIN voitures ON repartitions.idVOITURE = voitures.id WHERE repartitions.idTRAJET = idTrajet AND voitures.classe = ${classe})`;
+        }
+        var querySearchTrajets = `SELECT trajets.id as idTrajet, Garedep.nom as nomGareDepart, Garedep.ville as villeGareDepart,
+        Garearr.nom as nomGareArrivee, Garearr.ville as villeGareArrivee, trajets.heure_depart as heureDepart,
+        trajets.heure_arrivee as heureArrivee, trajets.prix_initial/100 as prixSansReduction, ${queryCouloirFenetre12(true, 1)} as nb_places_couloir_1,
+        ${queryCouloirFenetre12(false, 1)} as nb_places_fenetre_1, ${queryCouloirFenetre12(true, 2)} as nb_places_couloir_2, ${queryCouloirFenetre12(false, 2)} as nb_places_fenetre_2,
+        trains.type
+        FROM trajets
+        JOIN gares AS Garedep ON Garedep.id = trajets.idGAREDEPART
+        JOIN gares AS Garearr ON Garearr.id = trajets.idGAREARRIVEE
+        JOIN trains ON trains.id = trajets.idTRAIN
+        GROUP BY trains.id`
+        connection.connect();
+        connection.query(querySearchTrajets, function(err,rows,fields){
+            if (err){
+                console.log(err);
+                connection.end();
+                return res.status(500).json(err);
+            }
+            connection.end();
+            return res.status(201).json(rows);
+       });
     }
 
    }

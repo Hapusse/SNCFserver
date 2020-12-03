@@ -24,7 +24,7 @@ exports.router = (function() {
     apiRouter.route('/admin/creation/trajet/').post(adminCtrl.trajetCreator);
     apiRouter.route('/search/gares/').get(clientsCtrl.searchGares);
     apiRouter.route('/search/reductions/').get(clientsCtrl.searchReductions);
-
+    apiRouter.route('/search/trajets/').get(clientsCtrl.searchTrajets);
 
     return apiRouter;
 })();

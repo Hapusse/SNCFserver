@@ -36,7 +36,7 @@ module.exports = {
             if (err){
                 console.log(err);
                 connection.end();
-                return res.status(500).json({erreur:"Erreur serveur"});
+                return res.status(500).json({error:"Erreur serveur"});
             }
             if (rows[0] == undefined){
                 bcrypt.hash(password,5,function(err,bcryptedPassword){
@@ -45,7 +45,7 @@ module.exports = {
                         if (err){
                             console.log(err);
                             connection.end();
-                            return res.status(500).json({erreur:"Erreur serveur"});
+                            return res.status(500).json({error:"Erreur serveur"});
                         }
                         connection.end();
                         return res.status(201).json({status:'complete'});
@@ -169,7 +169,7 @@ module.exports = {
             if (err) {
                 console.log(err);
                 connection.end();
-                return res.status(500).json({erreur:"Erreur serveur"});
+                return res.status(500).json({error:"Erreur serveur"});
             }
             connection.end()
             return res.status(201).json(rows);
@@ -198,11 +198,11 @@ module.exports = {
            if (err){
                console.log(err);
                connection.end();
-               return res.status(500).json({erreur:"Erreur serveur"});
+               return res.status(500).json({error:"Erreur serveur"});
            }
            if (rows[0] == undefined){
                connection.end();
-               return res.status(404).json({erreur:"Réservation non trouvée sur cet utilisateur"});
+               return res.status(404).json({error:"Réservation non trouvée sur cet utilisateur"});
            }    else    {
                 // Le trajet est bien réservé par cet utilisateur.
                 connection.query(`SELECT repartitions.id as idREPARTITION, places.cote_couloir as cotecouloir
@@ -214,7 +214,7 @@ module.exports = {
                     if (err){
                         console.log(err);
                         connection.end();
-                        return res.status(500).json({erreur:"Erreur serveur"});
+                        return res.status(500).json({error:"Erreur serveur"});
                     }
                     if (rows[0] == undefined){
                         connection.end();
@@ -255,12 +255,12 @@ module.exports = {
             if (err){
                 console.log(err);
                 connection.end();
-                return res.status(500).json({erreur:"Erreur serveur"});
+                return res.status(500).json({error:"Erreur serveur"});
             }
             // On a récupéré toutes les voitures de même classe et de même situation couloir/fenetre que celle qu'on recherche.
             if (rows[0] == undefined){
                 connection.end();
-                return res.status(404).json({erreur:"Réservation non disponible"});
+                return res.status(404).json({error:"Réservation non disponible"});
             }
             var idVoiture = rows[0].idVoiture;
             var coefficient_multiplicatif_classe = (classeVoiture == '1') ? 1.1:1
@@ -286,7 +286,7 @@ module.exports = {
                                             if (err){
                                                 console.log(err);
                                                 connection.end();
-                                                return res.status(500).json({erreur:"Erreur serveur"});
+                                                return res.status(500).json({error:"Erreur serveur"});
                                             }
                                         });
             connection.query(`UPDATE repartitions SET nb_places_${couloirfenetre} = nb_places_${couloirfenetre} - 1
@@ -312,11 +312,11 @@ module.exports = {
                 if (err){
                     console.log(err);
                     connection.end();
-                    return res.status(500).json({erreur:"Erreur serveur"});
+                    return res.status(500).json({error:"Erreur serveur"});
                 }
                 if (rows[0] == undefined){
                     connection.end();
-                    return res.status(404).json({erreur:"Utilisateur non trouvé"});
+                    return res.status(404).json({error:"Utilisateur non trouvé"});
                 }    else    {
                      // Il faut modifier les infos si elles ne sont pas définies (ou si on veut pour idREDUCTION)
                      var newEmail = (email == "undefined") ? rows[0].email : email;
@@ -366,6 +366,12 @@ module.exports = {
        });
     },
     searchTrajets: function(req,res){
+        var jourTrajet = req.body.jourTrajet;
+        var idGareDepart = req.body.idGareDepart;
+        var idGareArrivee = req.body.idGareArrivee;
+        if (jourTrajet == undefined || idGareDepart == undefined || idGareArrivee == undefined){
+            return res.status(400).json({'error':'Un argument est manquant (jourTrajet ou idGareDepart ou idGareArrivee).'})
+        }
         var connection = mysql.createConnection(config.development);
         queryCouloirFenetre12 = function(isCouloir, classe){
             var couloirFenetre = (isCouloir) ? "couloir" : "fenetre";
@@ -381,6 +387,7 @@ module.exports = {
         JOIN gares AS Garedep ON Garedep.id = trajets.idGAREDEPART
         JOIN gares AS Garearr ON Garearr.id = trajets.idGAREARRIVEE
         JOIN trains ON trains.id = trajets.idTRAIN
+        WHERE idGAREDEPART = ${idGareDepart} AND idGAREARRIVEE = ${idGareArrivee} AND DATE(heureDepart) = ${jourTrajet}
         GROUP BY trains.id`
         connection.connect();
         connection.query(querySearchTrajets, function(err,rows,fields){

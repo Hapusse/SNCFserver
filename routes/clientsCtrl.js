@@ -138,7 +138,7 @@ module.exports = {
         var connection = mysql.createConnection(config.development);
         connection.connect();
         // On dump les infos utiles de la base clients
-        connection.query(`SELECT id,email,prenom,nom,date_naissance,isAdmin FROM clients WHERE id ='${userId}'`, function(err, rows, fields) {
+        connection.query(`SELECT id,email,prenom,nom,date_naissance,isAdmin,idREDUCTION FROM clients WHERE id ='${userId}'`, function(err, rows, fields) {
             if (rows[0] != undefined){
                 // On a trouvé un résultat donc on le renvoie
                 connection.end();
@@ -430,6 +430,8 @@ module.exports = {
                         }
                      var newIdReduction = idREDUCTION;
                      connection.query(`UPDATE clients SET idREDUCTION = ${newIdReduction} WHERE id = ${userId}`)
+                     connection.end();
+                     return res.status(201).json({status:"Complete"});
                 });
             }
         });
@@ -525,5 +527,4 @@ module.exports = {
             return res.status(201).json(rows);
        });
     }
-
-   }
+}

@@ -250,41 +250,40 @@ module.exports = {
             var configuration = config.development;
             var date = req.body.date;
             if (date == null || idGare == null){
-                return res.status(400).json({'error' : 'Paramètres manquants ou incohérents. idGAREDEPART, idGAREARRIVEE, idTrain, listeVoiture, politiquePrix, heureDepart, heureArrivee'});    
+                return res.status(400).json({'error' : 'Paramètres manquants ou incohérents. gare, date'});    
             }
             var selectionLieuDerniereArrivee = `SELECT gares.id
             FROM gares 
             JOIN trajets ON gares.id = trajets.idGAREARRIVEE
             JOIN repartitions ON repartitions.idTRAJET = trajets.id
-            WHERE repartitions.idVOITURE = idvoit AND trajets.heure_depart < '${date}'
+            WHERE repartitions.idVOITURE = voits.id AND trajets.heure_depart < '${date}'
             ORDER BY trajets.heure_depart DESC
             LIMIT 1`
             var nbLieuDerniereArrivee = `SELECT COUNT(*)
             FROM gares 
             JOIN trajets ON gares.id = trajets.idGAREARRIVEE
             JOIN repartitions ON repartitions.idTRAJET = trajets.id
-            WHERE repartitions.idVOITURE = idvoit AND trajets.heure_depart < '${date}'
-            ORDER BY trajets.heure_depart DESC
-            LIMIT 1`
+            WHERE repartitions.idVOITURE = voits.id AND trajets.heure_depart < '${date}'
+            ORDER BY trajets.heure_depart DESC`
+
             var selectionLieuProchainDepart = `SELECT gares.id
             FROM gares 
             JOIN trajets ON gares.id = trajets.idGAREARRIVEE
             JOIN repartitions ON repartitions.idTRAJET = trajets.id
-            WHERE repartitions.idVOITURE = idvoit AND trajets.heure_depart > '${date}'
+            WHERE repartitions.idVOITURE = voits.id AND trajets.heure_depart > '${date}'
             ORDER BY trajets.heure_depart ASC
             LIMIT 1`
             var nbLieuProchainDepart = `SELECT COUNT(*)
             FROM gares 
             JOIN trajets ON gares.id = trajets.idGAREARRIVEE
             JOIN repartitions ON repartitions.idTRAJET = trajets.id
-            WHERE repartitions.idVOITURE = idvoit AND trajets.heure_depart > '${date}'
-            ORDER BY trajets.heure_depart ASC
-            LIMIT 1`
-            selectionVoituresPresentesAUneDate = `SELECT voitures.id as idvoit, voitures.nb_places_couloir as nbPlacesCouloir,
-            voitures.nb_places_fenetre as nbPlacesFenetre, voitures.classe as classeVoiture
-            FROM voitures
-            WHERE ((${selectionLieuDerniereArrivee}) = ${idGare} OR (${nbLieuDerniereArrivee})=0 AND ((${selectionLieuProchainDepart}) = ${idGare} OR ${nbLieuProchainDepart} = 0)
-            LIMIT ${nbResultatsLimite}`
+            WHERE repartitions.idVOITURE = voits.id AND trajets.heure_depart > '${date}'
+            ORDER BY trajets.heure_depart ASC`
+            selectionVoituresPresentesAUneDate = `SELECT voits.id as idvoit, voits.nb_places_couloir as nbPlacesCouloir,
+            voits.nb_places_fenetre as nbPlacesFenetre, voits.classe as classeVoiture
+            FROM voitures as voits
+            WHERE ((${selectionLieuDerniereArrivee}) = ${idGare} OR (${nbLieuDerniereArrivee}) = 0 )
+            AND ((${selectionLieuProchainDepart}) = ${idGare} OR (${nbLieuProchainDepart}) = 0 )`
             var connection = mysql.createConnection(configuration);
             // Créer un trajet
             connection.connect();

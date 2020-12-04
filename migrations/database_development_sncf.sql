@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS `repartitions` (
   PRIMARY KEY (`id`),
   KEY `idTRAJET` (`idTRAJET`),
   KEY `idVOITURE` (`idVOITURE`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ;
 
 -- Structure table billets :
 
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `billets` (
   KEY `idTRAJET` (`idTRAJET`),
   KEY `idPLACE` (`idPLACE`),
   KEY `idCLIENT` (`idCLIENT`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ;
 
 -- Structure de la table `clients`
 --
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS `clients` (
   `isAdmin` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idREDUCTION` (`idREDUCTION`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+);
 
 
 --
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `trajets` (
   KEY `idGAREDEPART` (`idGAREDEPART`),
   KEY `idGAREARRIVEE` (`idGAREARRIVEE`),
   KEY `idTRAIN` (`idTRAIN`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ;
 
 
 
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS `gares` (
   `nom` varchar(255) NOT NULL,
   `ville` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ;
 
 -- --------------------------------------------------------
 
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS `places` (
   `cote_couloir` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idVOITURE` (`idVOITURE`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ;
 
 -- --------------------------------------------------------
 
@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS `reductions` (
   `nom` varchar(255) NOT NULL,
   `pourcentage` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+);
 
 
 
@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS `trains` (
   `numero` varchar(255) NOT NULL,
   `type` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ;
 
 -- --------------------------------------------------------
 
@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS `voitures` (
   `nb_places_fenetre` int NOT NULL,
   `classe` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ;
 
 --
 -- Contraintes pour les tables déchargées
@@ -199,7 +199,7 @@ INSERT INTO `reductions` (`id`, `nom`, `pourcentage`) VALUES (1, "Aucune réduct
 -- Création d'un profil administrateur :
 
 INSERT INTO `clients` (`id`, `idREDUCTION`, `prenom`, `nom`, `date_naissance`, `email`, `password`, `isAdmin`) VALUES
-(1, 1, 'Admin', 'Istrator', NULL, 'enguerran.vandenbossche@ecl17.ec-lyon.fr', '$2b$05$hZNgwjcf1DiQRTkFLP0.buyePL9KaU7cDSv7jxlQekV5kV47eehMy', 1);
+(1, 1, 'Admin', 'Istrator', NULL, 'admin@sncfproject.fr', '$2b$05$hZNgwjcf1DiQRTkFLP0.buyePL9KaU7cDSv7jxlQekV5kV47eehMy', 1);
 
 
 

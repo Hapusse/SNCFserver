@@ -4,9 +4,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var apiRouter = require('./apiRouter').router;
 
-//var automatedFunctions = require('./automatedFunctions.js');
-
-// Intantiate server
+// Intantie le serveur
 
 var server = express();
 
@@ -31,11 +29,9 @@ server.get("/", function (req,res) {
     res.status(200).send("<h1> Bienvenue dans la matrice ! </h1>");
 });
 
+
 server.use('/api/',apiRouter);
 
-// Automated functions (runs every minute for now)
-
-//setInterval(automatedFunctions.ratingActualization,INTER_ACTUALISATION_CLASSEMENT);
 
 
 // Launch server

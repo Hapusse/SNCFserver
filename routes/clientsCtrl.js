@@ -260,7 +260,7 @@ module.exports = {
        var connection = mysql.createConnection(config.development);
        connection.connect();
        // Premièrement, vérifier que le trajet est bien réservé par l'utilisateur qui le demande
-       connection.query(`SELECT billets.id WHERE billets.id = ${idBillet} AND billets.idCLIENT = ${userId}`,function(err,rows,fields){
+       connection.query(`SELECT billets.id FROM billets WHERE billets.id = ${idBillet} AND billets.idCLIENT = ${userId}`,function(err,rows,fields){
            if (err){
                console.log(err);
                connection.end();
@@ -291,7 +291,7 @@ module.exports = {
                         // On supprime le billet et on incrémente le nombre de places dispo côté couloir/fenetre de 1.
                         var couloirfenetre = (rows[0].cotecouloir == 1) ? "couloir":"fenetre";
                         connection.query(`DELETE FROM billets WHERE id = ${idBillet}`);
-                        connection.query(`UPDATE repartitions SET nb_places_${couloirfenetre} = nb_places_${couloirfenetre} + 1 WHERE id = ${rows[0].idRepartition}`);
+                        connection.query(`UPDATE repartitions SET nb_places_${couloirfenetre} = nb_places_${couloirfenetre} + 1 WHERE id = ${rows[0].idREPARTITION}`);
                         connection.end();
                         return res.status(201).json({status : `complete`})
                     }

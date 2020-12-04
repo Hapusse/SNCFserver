@@ -9,11 +9,12 @@ var clientsCtrl = require('./routes/clientsCtrl');
 exports.router = (function() {
     var apiRouter = express.Router();
     
-    //Users routes
+    //Ensemble des routes utilisables dans l'API :
     apiRouter.route('/users/register/').post(clientsCtrl.register);
     apiRouter.route('/users/login/').post(clientsCtrl.login);
     apiRouter.route('/users/me/').post(clientsCtrl.getUserProfile);
     apiRouter.route('/users/me/changePassword/').put(clientsCtrl.changePassword);
+    apiRouter.route('/users/me/changePersonnalData/').post(clientsCtrl.changePersonnalData);
     apiRouter.route('/users/me/cancelReservation/').put(clientsCtrl.cancelReservation);
     apiRouter.route('/users/me/myReservations/').get(clientsCtrl.getMyReservations);
     apiRouter.route('/users/me/myReservations/newReservation/').post(clientsCtrl.newReservation);
